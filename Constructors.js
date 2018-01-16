@@ -1,5 +1,39 @@
 /**
-* This is the player
+ * @fileOverview All of the constructors used in the game.
+ * @author Parker Gutierrez
+ */
+
+/**
+* This is the player that you control when playing the game.
+* @property {number} x - The x coordinate of the player.
+* @property {number} y - The y coordinate of the player.
+* @property {number} w - The width of the player.
+* @property {number} h - The height of the player.
+*
+* @property {number} prevX - The previous x location of the player.
+* @property {number} prevY - The previous y location of the player.
+*
+* @property {number} xVel - The x velocity of the player.
+* @property {number} maxXVel - The maximum x velocity of the player in either direction.
+*
+* @property {number} yVel - The y velocity of the player.
+* @property {number} maxYVel - The maximum y velocity of the player going down.
+*
+* @property {number} accel - The acceleration of the player when they move on the ground.
+* @property {number} grav - The gravity the player experiences.
+*
+* @property {string} col - The color of the player.
+* @property {string} stroke - The stroke color of the player. 
+*
+* @property {boolean} isMoving - True if any movement keys are being held down (excluding jumping), false otherwise.
+* @property {Function} draw - Calls the drawRect function to draw the player.
+* @property {Function} update - Updates the player's information, including position.
+* @property {Function} isColliding - Returns true if the player is colliding with given rect.
+* @property {Function} rectCollide - Deals with player-rect collisions
+* @property {Function} jump - Makes the player jump
+* @property {Function} getCenterX - Returns the player's center x coordinate, not accounting for the screen's x value.
+* @property {Function} getCenterY - Returns the player's center y coordinate, not accounting for the screen's y value.
+* @constructor
 */
 function Player(x = W/2,y = H/2,s){
 	this.x = x;
@@ -19,25 +53,16 @@ function Player(x = W/2,y = H/2,s){
 	this.accel = 3;
 	this.grav = 0.75;
 	
-	this.fill = "red";
+	this.col = "red";
 	this.stroke = "white";
 	
 	this.isMoving = false;
+	this.canJump = true;
 	
 	this.draw = function(){
-		c.beginPath();
-		c.fillStyle = this.fill;
-		c.strokeStyle = this.stroke;
-		c.rect(this.x,this.y,this.w,this.h);
-		c.stroke();
-		c.fill();
-		c.closePath();
+		drawRect(this.x, this.y, this.w, this.h, this.col, this.stroke);
 	}
 	
-	
-	/**
-	* Update the player
-	*/
 	this.update = function(){
 		
 		
@@ -81,16 +106,11 @@ function Player(x = W/2,y = H/2,s){
 		}
 	}
 	
-	/**
-	* Check if the player is colliding with a rectangle.
-	* @param {Object} rect the rectangle you're checking collisions with
-	*/
 	this.isColliding = function(rect){
 		if (this.x < rect.x + rect.w &&
 		  this.x + this.w > rect.x &&
 		  this.y < rect.y + rect.h &&
 		  this.y + this.h > rect.y){
-			console.log(rect);
 			return true;
 		}
 		return false;
@@ -98,12 +118,15 @@ function Player(x = W/2,y = H/2,s){
 	
 	
 	this.rectCollide = function(plat){
+		this.canJump = false;
+		
 		//Top collision
 		if (this.prevY < plat.y &&
 		  this.prevX + this.w > plat.x &&
 		  this.prevX < plat.x + plat.w){
 			this.y = plat.y - this.h;
 			this.yVel = 0;
+			this.canJump = true;
 		}
 		//Bottom collision
 		else if(this.prevY > plat.y + plat.h &&
@@ -113,7 +136,7 @@ function Player(x = W/2,y = H/2,s){
 			this.yVel = 0;
 		}
 		//Left collision
-		if (this.prevX < plat.x &&
+		else if (this.prevX < plat.x &&
 		  this.prevY + this.h > plat.y &&
 		  this.prevY < plat.y + plat.h){
 			this.x = plat.x - this.w;
@@ -129,18 +152,39 @@ function Player(x = W/2,y = H/2,s){
 	}
 	
 	
-	this.jump = function(){
-		this.yVel = -15;
+	this.jump = function(shift){
+		if (this.canJump){
+			if (shift){
+				this.yVel = -10;
+			}
+			else{
+				this.yVel = -15;
+			}
+			this.canJump = false;
+		}
+	}
+	
+	this.getCenterX = function(){
+		return this.x + this.w / 2;
+	}
+	this.getCenterY = function(){
+		return this.y + this.h / 2;
 	}
 }
 
 
 /**
- *The platform object, the one the player can Numbereract with.
- *@param {Number} x The x location
- *@param {Number} y The y location
- *@param {Number} w The platform width
- *@param {Number} h The platform height
+ * The platform object, the one the player can interact with.
+ * @property {number} x - The x coordinate of the platform.
+ * @property {number} y - The y coordinate of the platform.
+ * @property {number} w - The width of the platform.
+ * @property {number} h - The height of the platform.
+ * 
+ * @property {string} col - The color of the platform.
+ * @property {string} stroke - The stroke color of the platform.
+ *
+ * @property {Function} draw - Calls the drawRect function to draw the platform.
+ * @constructor
 */
 function Platform(x, y, w, h = w / 2){
 	this.x = x;
@@ -151,29 +195,21 @@ function Platform(x, y, w, h = w / 2){
 	this.stroke = "white";
 	
 	this.draw = function(){
-		c.beginPath();
-		c.fillStyle = this.col;
-		c.strokeStyle = this.stroke;
-		c.rect(this.x,this.y,this.w,this.h);
-		c.fill();
-		c.stroke();
-		c.closePath();
+		drawRect(this.x,this.y,this.w,this.h,this.col,this.stroke);
 	}
 }
 
 /**
- * This is the background. It repeats the pattern given over and over.
- * @param {Object} pattern The pattern to copy over and over
- * @param {Number} movePercentage The amount the background moves relative to how much the player moves
+ * This is the background. It is made of a pattern that draws the pattern it's made of repeatedly.
+ * @property {BackgroundPattern} pattern - The pattern that the background is composed of.
+ * @property {number} movePercentage - The amount that the background moves relative to the foreground.
+ * @property {Function} draw - Draws the background; Repeatedly draws the pattern however many times it needs to to fill the screen.
+ * @constructor
 */
 function Background(pattern, movePercentage){
 	this.pattern = pattern;
 	this.movePercentage = movePercentage / 100;
 	
-	/**
-	 * Draws the background, redrawing the same background
-	 * as many times as it will fit.
-	*/
 	this.draw = function(){
 		
 		let patternW = this.pattern.w;
@@ -182,25 +218,30 @@ function Background(pattern, movePercentage){
 		let maxFitW = Math.ceil(W / patternW);
 		let maxFitH = Math.ceil(H / patternH);
 		
-		for (let i = 0; i < maxFitW; i++){
-			for (let j = 0; j < maxFitH; j++){
-				this.pattern.draw(i * patternW, j * patternH);
+		let offsetX = screen.x * this.movePercentage % patternW;
+		let offsetY = screen.y * this.movePercentage % patternH;
+		
+		for (let i = -1; i < maxFitW + 1; i++){
+			for (let j = -1; j < maxFitH + 1; j++){
+				this.pattern.draw((i * patternW) + offsetX, (j * patternH) + offsetY);
 			}
 		}
 	}
 }
 /**
- * This is the pattern repeated over and over in the background.
- * 
-*/
+ * A group of background shapes, which can be drawn in the same configuration wherever it is drawn.
+ * @property {Array.<BackgroundShape, number>} shapes - An array of BackgroundShape objects<br>
+ * with corresponding x and y values relative to the top right corner of the pattern.
+ * @property {number} w - Width of the pattern
+ * @property {number} h - Height of the pattern
+ * @property {Function} draw - Draws each background shape contained inside of itself at the given x and y values.
+ * @constructor
+ */
 function BackgroundPattern(shapes,w,h){
 	this.shapes = shapes;
 	this.w = w;
 	this.h = h;
 	
-	/**
-	 * Draws all of the shapes within this.shapes relative to the given x and y
-	*/
 	this.draw = function(x = 0,y = 0){
 		for (shape of shapes){
 			shape.draw(x,y);
@@ -210,12 +251,14 @@ function BackgroundPattern(shapes,w,h){
 
 /**
  * A shape, to be used in a background pattern.
- * @param {String} type The type of the shape
- * @param {Array} info The information of the shape.
- * @param {String} col The color of the shape.
- * If rect, then info contains: x, y, width, height
- * If circle, the info contains: x, y, r
-*/
+ * @property {string} type - The type of shape.
+ * @property {Array.<number>} info - The information for the shape,<br>
+ * which differs depending on the type.<br>
+ * For "rect", it's x, y, width, height.
+ * @property {string} col - The color of the shape.
+ * @property {Function} draw - Draws the shape relative to the given x and y parameters.
+ * @constructor
+ */
 function BackgroundShape(type, info, col){
 	this.type = type;
 	this.info = info;
@@ -223,9 +266,9 @@ function BackgroundShape(type, info, col){
 	
 	/**
 	 * Draws the background, starting at the provided x and y values
-	 * @param x The starting x value
-	 * @param y The starting y value
-	*/
+	 * @param {number} x - The starting x value
+	 * @param {number} y - The starting y value
+	 */
 	this.draw = function(startX, startY){
 		if (this.type === "rect"){
 			let x = this.info[0];

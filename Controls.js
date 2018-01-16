@@ -1,6 +1,11 @@
 /**
-* The one-time key press function
-*/
+ * @fileOverview This file contains the functions that deal with the controls
+ */
+
+
+/**
+ * The one-time key press function
+ */
 function keyPressed(e){
 	switch(e.keyCode){
 		case 38:
@@ -12,8 +17,8 @@ function keyPressed(e){
 	}
 }
 /**
-* The repeating key press function
-*/
+ * The repeating key press function
+ */
 function whileKeyPressed(){
 	let player = game.player;
 	if (keysDown[37] || keysDown[65]){

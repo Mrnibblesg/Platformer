@@ -1,3 +1,7 @@
+/**
+ * @fileOverview The file is the main runner that deals with all of the game logic.
+ */
+
 const canvas = document.getElementById("myCanvas");
 const c = canvas.getContext("2d");
 const W = window.innerWidth;
@@ -7,6 +11,7 @@ canvas.width = W;
 canvas.height = H;
 
 let game = {};
+let screen = {};
 
 addEventListener("keydown",function(e){
 	keysDown[e.keyCode] = true;
@@ -16,10 +21,6 @@ addEventListener("keyup",function(e){
 	delete keysDown[e.keyCode];
 });
 
-
-let globalX = 0;
-let globalY = 0;
-
 initialize();
 
 function gameLoop(){
@@ -27,5 +28,6 @@ function gameLoop(){
 	whileKeyPressed();
 	game.draw();
 	game.update();
+	screen.follow(game.player);
 	requestAnimationFrame(gameLoop);
 }

@@ -1,3 +1,4 @@
+"use strict";
 /**
  * @fileOverview This file contains the functions that deal with the controls
  */

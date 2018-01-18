@@ -1,3 +1,4 @@
+"use strict";
 /**
  * @fileOverview The file is the main runner that deals with all of the game logic.
  */
@@ -10,8 +11,8 @@ let keysDown = [];
 canvas.width = W;
 canvas.height = H;
 
-let game = {};
 let screen = {};
+let game = {};
 
 addEventListener("keydown",function(e){
 	keysDown[e.keyCode] = true;

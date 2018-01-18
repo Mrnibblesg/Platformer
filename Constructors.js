@@ -1,3 +1,4 @@
+"use strict";
 /**
  * @fileOverview All of the constructors used in the game.
  * @author Parker Gutierrez
@@ -66,44 +67,45 @@ function Player(x = W/2,y = H/2,s){
 	this.update = function(){
 		
 		
-		updateMovement(this);
+		//
+		//Player Movement
 		
-		function updateMovement(player){
-			//Move prevX and prevY to x and y before they change.
-			player.prevX = player.x;
-			player.prevY = player.y;
-			
-			
-			//Update x and y locations and speeds
-			player.yVel += player.grav;
-			
-			
-			//Throttle y speeds
-			if (player.yVel > player.maxYVel){
-				player.yVel = player.maxYVel;
-			}
-			player.y += player.yVel;
-			
-			//Throttle x speeds
-			if (player.xVel > player.maxXVel){
-				player.xVel = player.maxXVel;
-			}
-			else if (player.xVel < -player.maxXVel){
-				player.xVel = -player.maxXVel;
-			}
-			
-			player.x += player.xVel;
-			
-			if (!player.isMoving){
-				player.xVel *= 0.65;
-			}
-			
-			//Stop x momentum if it is really small.
-			if (Math.abs(player.xVel) < 0.1){
-				player.xVel = 0;
-			}
-			
+		//Move prevX and prevY to x and y before they change.
+		this.prevX = this.x;
+		this.prevY = this.y;
+		
+		
+		//Update x and y locations and speeds
+		this.yVel += this.grav;
+		
+		
+		//Throttle y speeds
+		if (this.yVel > this.maxYVel){
+			this.yVel = this.maxYVel;
 		}
+		this.y += this.yVel;
+		
+		//Throttle x speeds
+		if (this.xVel > this.maxXVel){
+			this.xVel = this.maxXVel;
+		}
+		else if (this.xVel < -this.maxXVel){
+			this.xVel = -this.maxXVel;
+		}
+		
+		this.x += this.xVel;
+		
+		if (!this.isMoving){
+			this.xVel *= 0.65;
+		}
+		
+		//Stop x momentum if it is really small.
+		if (Math.abs(this.xVel) < 0.1){
+			this.xVel = 0;
+		}
+		
+		//End Player Movement
+		//
 	}
 	
 	this.isColliding = function(rect){
@@ -243,7 +245,7 @@ function BackgroundPattern(shapes,w,h){
 	this.h = h;
 	
 	this.draw = function(x = 0,y = 0){
-		for (shape of shapes){
+		for (let shape of this.shapes){
 			shape.draw(x,y);
 		}
 	}
@@ -284,5 +286,30 @@ function BackgroundShape(type, info, col){
 			c.fillRect(totalX,totalY,w,h);
 			c.closePath();
 		}
+	}
+}
+function Sector(){
+	
+}
+function Level(){
+	
+}
+function LevelData(platformGroup){
+	this.platformGroup = platformGroup || new platFormGroup();
+}
+function PlatformGroup(platforms){
+	this.platforms = platforms || [];
+	
+	this.draw = function(){
+		for (let platform of this.platforms){
+			platform.draw();
+		}
+	}
+	
+	this.addPlatform = function(platform){
+		this.platforms.push(platform);
+	}
+	this.removePlatform = function(index){
+		this.platforms.splice(index,1);
 	}
 }

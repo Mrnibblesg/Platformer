@@ -21,6 +21,22 @@ function drawRect(x,y,w,h,col,stroke,followsScreen = false){
 	c.stroke();
 	c.closePath();
 }
+function drawText(str,x,y,font,align,base,col){
+	c.beginPath();
+	c.fillStyle = col;
+	c.font = font;
+	c.textAlign = align;
+	c.textBaseline = base;
+	c.fillText(str,x,y);
+	c.closePath();
+}
+function drawCircle(x,y,r,col,followsScreen = false){
+	c.beginPath();
+	c.fillStyle = col;
+	c.arc(x,y,r,0,2*Math.PI);
+	c.fill();
+	c.closePath();
+}
 
 function drawLine(x1,y1,x2,y2,stroke){
 	c.beginPath();
@@ -67,11 +83,11 @@ function logistic(max,steepnessCoefficient,x,xOffset){
 }
 
 /**
- * Checks whether an object exists or not.
- * This function was made for the sake of writing less ambiguous code
+ * Check if an object exists
  */
-function exists(object){
-	if (object){
+ 
+function exists(obj){
+	if (obj){
 		return true;
 	}
 	return false;

@@ -96,7 +96,7 @@ function Player(x = W/2,y = H/2,s){
 		this.x += this.xVel;
 		
 		if (!this.isMoving){
-			this.xVel *= 0.65;
+			this.xVel *= 0.7;
 		}
 		
 		//Stop x momentum if it is really small.
@@ -196,8 +196,17 @@ function Platform(x, y, w, h = w / 2){
 	this.col = "black";
 	this.stroke = "white";
 	
+	this.highlighted = false;
+	
 	this.draw = function(){
 		drawRect(this.x,this.y,this.w,this.h,this.col,this.stroke);
+		if (this.highlighted){
+			drawRect(this.x,this.y,this.w,this.h,"rgba(0,255,0,0.5)",this.stroke);
+		}
+	}
+	
+	this.toggleHighlight = function(){
+		this.highlighted = !this.highlighted;
 	}
 }
 
@@ -208,7 +217,7 @@ function Platform(x, y, w, h = w / 2){
  * @property {Function} draw - Draws the background; Repeatedly draws the pattern however many times it needs to to fill the screen.
  * @constructor
 */
-function Background(pattern, movePercentage){
+function Background(pattern = new BackgroundPattern(), movePercentage = 50){
 	this.pattern = pattern;
 	this.movePercentage = movePercentage / 100;
 	
@@ -239,7 +248,7 @@ function Background(pattern, movePercentage){
  * @property {Function} draw - Draws each background shape contained inside of itself at the given x and y values.
  * @constructor
  */
-function BackgroundPattern(shapes,w,h){
+function BackgroundPattern(shapes = [],w = 100,h = 100){
 	this.shapes = shapes;
 	this.w = w;
 	this.h = h;
@@ -261,7 +270,7 @@ function BackgroundPattern(shapes,w,h){
  * @property {Function} draw - Draws the shape relative to the given x and y parameters.
  * @constructor
  */
-function BackgroundShape(type, info, col){
+function BackgroundShape(type = "none", info = [], col = "black"){
 	this.type = type;
 	this.info = info;
 	this.col = col;
@@ -281,22 +290,69 @@ function BackgroundShape(type, info, col){
 			let totalX = x + startX;
 			let totalY = y + startY;
 			
-			c.beginPath();
-			c.fillStyle = this.col;
-			c.fillRect(totalX,totalY,w,h);
-			c.closePath();
+			drawRect(totalX,totalY,w,h,this.col,transparent,true);
 		}
 	}
 }
-function Sector(){
+/**
+ * Contains levels of the same style/theme
+ */
+function Sector(levels = []){
+	this.levels = levels;
+	
+	this.addLevel = function(newLevel){
+		this.levels.push(newLevel);
+	};
+}
+
+/**
+ * Ties all of the level information together.
+ */
+function Level(data = new LevelData(),style = new LevelStyle()){
+	this.data = data;
+	this.style = style;
+	
+	this.spawnPlayer = function(){
+		let spawnX = this.data.spawnpoint.x;
+		let spawnY = this.data.spawnpoint.y;
+		game.player = new Player(spawnX,spawnY,20,20);
+	}
+	this.draw = function(){
+		this.data.draw();
+	}
+	this.getPlatforms = function(){
+		return this.data.platformGroup.platforms;
+	}
+}
+
+/**
+ * Will contain information like textures for particular types of objects
+ */
+function LevelStyle(){
 	
 }
-function Level(){
+
+/**
+ * Contains the level data, such as the platforms, spawnpoint, and backgrounds.
+ */
+function LevelData(platformGroup, spawnpoint, backgrounds){
+	this.platformGroup = platformGroup || new PlatformGroup();
+	this.spawnpoint = spawnpoint || new Spawnpoint(0,0);
+	this.backgrounds = backgrounds || [new Background()];
 	
+	this.draw = function(){
+		for (let background of this.backgrounds){
+			background.draw();
+		}
+		this.platformGroup.draw();
+		this.spawnpoint.draw();
+	}
 }
-function LevelData(platformGroup){
-	this.platformGroup = platformGroup || new platFormGroup();
-}
+
+
+/**
+ * Contains platforms in a particular group.
+ */
 function PlatformGroup(platforms){
 	this.platforms = platforms || [];
 	
@@ -311,5 +367,20 @@ function PlatformGroup(platforms){
 	}
 	this.removePlatform = function(index){
 		this.platforms.splice(index,1);
+	}
+	this.getPlatform = function(index){
+		return this.platforms[index];
+	}
+}
+
+/**
+ * The spawnpoint
+ */
+function Spawnpoint(x,y){
+	this.x = x;
+	this.y = y;
+	
+	this.draw = function(){
+		drawRect(this.x,this.y,20,20,"rgba(255,0,0,0.5)","rgba(0,0,0,0.5)");
 	}
 }

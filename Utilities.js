@@ -31,6 +31,11 @@ function drawText(str,x,y,font,align,base,col){
 	c.closePath();
 }
 function drawCircle(x,y,r,col,followsScreen = false){
+	if (!followsScreen){
+		x += screen.x;
+		y += screen.y;
+	}
+	
 	c.beginPath();
 	c.fillStyle = col;
 	c.arc(x,y,r,0,2*Math.PI);
@@ -91,4 +96,59 @@ function exists(obj){
 		return true;
 	}
 	return false;
+}
+
+//It's assumed that obj is a rect with a w and h property
+function pointInsideRect(x,y,obj,countScreen = false){
+	let objX = obj.x;
+	let objY = obj.y;
+	let objW = obj.w;
+	let objH = obj.h;
+	
+	if (countScreen){
+		objX += screen.x;
+		objY += screen.y;
+	}
+	
+	if (x > objX && y > objY &&
+	x < objX + objW && y < objY + objH){
+		
+		return true;
+		
+	}
+	return false;
+}
+function deepClone(obj){
+	let clone;
+	
+	//Handle null, undefined, and primitive
+	if (obj === null || typeof obj !== "object"){
+		return obj;
+	}
+	
+	//Handle arrays
+	if (obj instanceof Array){
+		clone = [];
+		
+		for (let i = 0; i < obj.length; i++){
+			clone[i] = deepClone(obj[i]);
+		}
+		
+		return clone;
+	}
+	
+	//Handle objects
+	if (obj instanceof Object){
+		clone = {};
+		
+		for (let attr in obj){
+			if (obj.hasOwnProperty(attr)){
+				clone[attr] = deepClone(obj[attr]);
+			}
+		}
+		
+		return clone;
+	}
+	
+	throw new Error("Object not cloned");
 }

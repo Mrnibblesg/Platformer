@@ -11,7 +11,6 @@ addEventListener("keyup",function(e){
 
 addEventListener("click",function(e){
 	click(e);
-	console.log("click",e.x,e.y);
 });
 
 addEventListener("mousemove",function(e){
@@ -51,6 +50,46 @@ function keyPressed(e){
 			}
 		}
 	}
+	//loop through selected platforms
+	let platforms = editor.levelDataFrame.platformGroup.platforms;
+	for (let i = 0; i < platforms.length; i++){
+		let platform = platforms[i];
+		
+		if (platform.highlighted){
+			switch(e.keyCode){
+				
+				//Backspace
+				case 8:{
+					platforms.splice(i,1);
+					i--;
+					break;
+				}
+				
+				//left, up, right, down
+				case 37:{
+					//move platform left
+					
+					break;
+				}
+				case 38:{
+					//move platform right
+					
+					break;
+				}
+				case 39:{
+					//move platform up
+					
+					break;
+
+				}
+				case 40:{
+					//move platform down
+					
+					break;
+				}
+			}
+		}
+	}
 	
 	
 }
@@ -81,30 +120,33 @@ function whileKeyPressed(){
 		}
 	}
 	else{
+		const MOVE_SPEED = 5;
 		//Screen moving controls
 		
-		if (keysDown[37] || keysDown[65]){
+		if (keysDown[65]){
 			//left
-			screen.x += 3;
+			screen.x += MOVE_SPEED;
 		}
-		if (keysDown[39] || keysDown[68]){
+		if (keysDown[68]){
 			//right
-			screen.x -= 3;
+			screen.x -= MOVE_SPEED;
 		}
-		if (keysDown[38] || keysDown[87]){
+		if (keysDown[87]){
 			//up
-			screen.y += 3;
+			screen.y += MOVE_SPEED;
 		}
-		if (keysDown[40] || keysDown[83]){
+		if (keysDown[83]){
 			//down
-			screen.y -= 3;
+			screen.y -= MOVE_SPEED;
 		}
 	}
 }
 function click(e){
 	const X = e.x;
 	const Y = e.y;
-	for (let box of infoBoxes){
+	
+	for (let i = editor.infoBoxes.length - 1; i > -1; i--){
+		let box = editor.infoBoxes[i];
 		//First check if clicked in a box
 		//Then check if clicked on specific region (buttons, minimize button)
 		
@@ -133,32 +175,60 @@ function click(e){
 				if (X > buttonX && X < buttonX + buttonW &&
 				Y > buttonY && Y < buttonY + buttonH){
 					
-					button.execute();
+					if (button.type === "check"){
+						button.check();
+					}
+					else{
+						button.execute();
+					}
+					
 					return;
 				}
 			}
 		}
 	}
-	
-	if (platFrame.creating){
-		let roundX = e.x - (e.x % 5);
-		let roundY = e.y - (e.y % 5);
-		if (!platFrame.corner1){
-			platFrame.corner1 = true;
-			platFrame.x1 = roundX - screen.x;
-			platFrame.y1 = roundY - screen.y;
-		}
-		else if (!platFrame.corner2){
-			platFrame.corner2 = true;
-			platFrame.x2 = roundX - screen.x;
-			platFrame.y2 = roundY - screen.y;
-		}
-		else{
-			game.platformGroup.addPlatform(platFrame.create());
+	//Platform selection
+	for (let platform of editor.levelDataFrame.platformGroup.platforms){
+		if (pointInsideRect(X,Y,platform,true)){
+			platform.toggleHighlight();
 		}
 	}
 	
-
+	
+	
+	
+	
+	let roundX = X - (X % editor.gridSnap);
+	let roundY = Y - (Y % editor.gridSnap);
+	
+	//Platform creation
+	if (editor.platFrame.creating){
+		if (!editor.platFrame.corner1){
+			editor.platFrame.corner1 = true;
+			editor.platFrame.x1 = roundX - screen.x;
+			editor.platFrame.y1 = roundY - screen.y;
+		}
+		else if (!editor.platFrame.corner2){
+			editor.platFrame.corner2 = true;
+			editor.platFrame.x2 = roundX - screen.x;
+			editor.platFrame.y2 = roundY - screen.y;
+		}
+		else{
+			editor.levelDataFrame.platformGroup.addPlatform(editor.platFrame.create());
+		}
+	}
+	
+	//Spawnpoint creation
+	else if (editor.spawnFrame.creating){
+		if (!editor.spawnFrame.isPlaced){
+			editor.spawnFrame.midX = roundX - screen.x;
+			editor.spawnFrame.midY = roundY - screen.y;
+			editor.spawnFrame.isPlaced = true;
+		}
+		else{
+			editor.levelDataFrame.spawnpoint = editor.spawnFrame.create();
+		}
+	}
 }
 
 function drag(x1,y1,x2,y2){
@@ -168,8 +238,8 @@ function drag(x1,y1,x2,y2){
 	//Loop through boxes
 	//Check if clicked on header
 	//Move box
-	for (let box of infoBoxes){
-		
+	for (let i = editor.infoBoxes.length - 1; i > -1; i--){
+		let box = editor.infoBoxes[i];
 		//Dimensions of the box header.
 		const boxX = box.x;
 		const boxY = box.y;
@@ -186,8 +256,8 @@ function drag(x1,y1,x2,y2){
 	}
 }
 function mouseMove(e){
-	if (platFrame.creating){
-		if (!platFrame.corner1){
+	if (editor.platFrame.creating){
+		if (!editor.platFrame.corner1){
 			drawCircle(e.x,e.y,3,"red",false);
 		}
 	}

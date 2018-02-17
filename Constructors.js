@@ -201,7 +201,7 @@ function Platform(x, y, w, h = w / 2){
 	this.draw = function(){
 		drawRect(this.x,this.y,this.w,this.h,this.col,this.stroke);
 		if (this.highlighted){
-			drawRect(this.x,this.y,this.w,this.h,"rgba(0,255,0,0.5)",this.stroke);
+			drawRect(this.x,this.y,this.w,this.h,"rgba(0,255,0,0.3)",this.stroke);
 		}
 	}
 	

@@ -38,6 +38,7 @@ addEventListener("mouseup",function(e){
 
 function keyPressed(e){
 	let player = game.player;
+	let platforms = editor.levelDataFrame.platformGroup.platforms;
 	
 	
 	if (exists(player)){
@@ -51,7 +52,6 @@ function keyPressed(e){
 		}
 	}
 	//loop through selected platforms
-	let platforms = editor.levelDataFrame.platformGroup.platforms;
 	for (let i = 0; i < platforms.length; i++){
 		let platform = platforms[i];
 		
@@ -68,23 +68,23 @@ function keyPressed(e){
 				//left, up, right, down
 				case 37:{
 					//move platform left
-					
+					platform.x -= editor.moveAmount;
 					break;
 				}
 				case 38:{
 					//move platform right
-					
+					platform.y -= editor.moveAmount;
 					break;
 				}
 				case 39:{
 					//move platform up
-					
+					platform.x += editor.moveAmount;
 					break;
 
 				}
 				case 40:{
 					//move platform down
-					
+					platform.y += editor.moveAmount;
 					break;
 				}
 			}
@@ -144,11 +144,17 @@ function whileKeyPressed(){
 function click(e){
 	const X = e.x;
 	const Y = e.y;
+	let platforms = editor.levelDataFrame.platformGroup.platforms;
 	
 	for (let i = editor.infoBoxes.length - 1; i > -1; i--){
 		let box = editor.infoBoxes[i];
 		//First check if clicked in a box
 		//Then check if clicked on specific region (buttons, minimize button)
+		
+		if (!box.shown){
+			continue;
+		}
+		
 		
 		//Clicked in box
 		if (X > box.x && X < box.x + box.w &&
@@ -188,8 +194,8 @@ function click(e){
 		}
 	}
 	//Platform selection
-	for (let platform of editor.levelDataFrame.platformGroup.platforms){
-		if (pointInsideRect(X,Y,platform,true)){
+	for (let platform of platforms){
+		if (pointInsideRect(X,Y,platform,true) && editor.selectMode){
 			platform.toggleHighlight();
 		}
 	}
@@ -200,33 +206,36 @@ function click(e){
 	
 	let roundX = X - (X % editor.gridSnap);
 	let roundY = Y - (Y % editor.gridSnap);
+	let platFrame = editor.platFrame;
+	let spawnFrame = editor.spawnFrame;
+	let levelDataFrame = editor.levelDataFrame;
 	
 	//Platform creation
-	if (editor.platFrame.creating){
-		if (!editor.platFrame.corner1){
-			editor.platFrame.corner1 = true;
-			editor.platFrame.x1 = roundX - screen.x;
-			editor.platFrame.y1 = roundY - screen.y;
+	if (platFrame.creating){
+		if (!platFrame.corner1){
+			platFrame.corner1 = true;
+			platFrame.x1 = roundX - screen.x;
+			platFrame.y1 = roundY - screen.y;
 		}
-		else if (!editor.platFrame.corner2){
-			editor.platFrame.corner2 = true;
-			editor.platFrame.x2 = roundX - screen.x;
-			editor.platFrame.y2 = roundY - screen.y;
+		else if (!platFrame.corner2){
+			platFrame.corner2 = true;
+			platFrame.x2 = roundX - screen.x;
+			platFrame.y2 = roundY - screen.y;
 		}
 		else{
-			editor.levelDataFrame.platformGroup.addPlatform(editor.platFrame.create());
+			levelDataFrame.platformGroup.addPlatform(platFrame.create());
 		}
 	}
 	
 	//Spawnpoint creation
-	else if (editor.spawnFrame.creating){
-		if (!editor.spawnFrame.isPlaced){
-			editor.spawnFrame.midX = roundX - screen.x;
-			editor.spawnFrame.midY = roundY - screen.y;
-			editor.spawnFrame.isPlaced = true;
+	else if (spawnFrame.creating){
+		if (!spawnFrame.isPlaced){
+			spawnFrame.midX = roundX - screen.x;
+			spawnFrame.midY = roundY - screen.y;
+			spawnFrame.isPlaced = true;
 		}
 		else{
-			editor.levelDataFrame.spawnpoint = editor.spawnFrame.create();
+			levelDataFrame.spawnpoint = spawnFrame.create();
 		}
 	}
 }
@@ -256,9 +265,5 @@ function drag(x1,y1,x2,y2){
 	}
 }
 function mouseMove(e){
-	if (editor.platFrame.creating){
-		if (!editor.platFrame.corner1){
-			drawCircle(e.x,e.y,3,"red",false);
-		}
-	}
+	
 }

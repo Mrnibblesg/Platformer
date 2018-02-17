@@ -16,47 +16,50 @@ function InfoBox(x,y,w,h,header,lines,buttons = []){
 	this.buttons = buttons;
 	
 	this.minimized = false;
+	this.shown = true;
 	
 	this.buttons = buttons;
 	
 	this.draw = function(){
-		if (this.minimized){
-			//Draw maximize button only
-			drawRect(this.x,this.y,20,20,"green","black",true);
-			drawText("+",this.x + 10,this.y + 8, "20px Verdana","center","middle","white");
-			
-		}
-		else{
-			//Draw box, then contents
-			
-			
-			//Draw box
-			drawRect(this.x,this.y,this.w,this.h,"silver","black",true);
-			
-			//Draw minimize button
-			drawRect(this.x,this.y,20,20,"red","black",true);
-			drawText("-", this.x + 10, this.y + 8, "30px Verdana", "center", "middle", "white");
-			
-			//Draw text and buttons
-			for (let i = 0; i < this.lines.length; i++){
+		if (this.shown){
+			if (this.minimized){
+				//Draw maximize button only
+				drawRect(this.x,this.y,20,20,"green","black",true);
+				drawText("+",this.x + 10,this.y + 8, "20px Verdana","center","middle","white");
 				
-				let contents = this.lines[i];
-				let x = this.x + 10;
-				let y = this.y + (i + 1) * 20 + 10;
-				
-				if (typeof(contents) === "string"){
-					drawText(contents,x,y,"15px Verdana", "start", "hanging", "black");
-					
-				}
 			}
-			
-			//Draw the header
-			drawRect(this.x + 20,this.y,this.w - 20,20,"gray","black",true);
-			drawText(this.header, this.x + (this.w - 20) / 2 + 20, this.y + 10, "15px Verdana", "center","middle","white");
-			
-			
-			for (let button of this.buttons){
-				button.draw(this.x,this.y);
+			else{
+				//Draw box, then contents
+				
+				
+				//Draw box
+				drawRect(this.x,this.y,this.w,this.h,"silver","black",true);
+				
+				//Draw minimize button
+				drawRect(this.x,this.y,20,20,"red","black",true);
+				drawText("-", this.x + 10, this.y + 8, "30px Verdana", "center", "middle", "white");
+				
+				//Draw text and buttons
+				for (let i = 0; i < this.lines.length; i++){
+					
+					let contents = this.lines[i];
+					let x = this.x + 10;
+					let y = this.y + (i + 1) * 20 + 10;
+					
+					if (typeof(contents) === "string"){
+						drawText(contents,x,y,"15px Verdana", "start", "hanging", "black");
+						
+					}
+				}
+				
+				//Draw the header
+				drawRect(this.x + 20,this.y,this.w - 20,20,"gray","black",true);
+				drawText(this.header, this.x + (this.w - 20) / 2 + 20, this.y + 10, "15px Verdana", "center","middle","white");
+				
+				
+				for (let button of this.buttons){
+					button.draw(this.x,this.y);
+				}
 			}
 		}
 	}
@@ -134,6 +137,16 @@ function Button(relX,relY,w,h,text,col,type,func,func2 = undefined){
 }
 
 let editor = {
+	infoBoxes: [],
+	savedLevelData: [],
+	
+	keepCreating: false,
+	selectMode: false,
+	gridSnap: 5,
+	moveAmount: 2,
+	
+	
+	
 	levelDataFrame: {
 		platformGroup: new PlatformGroup(),
 		spawnpoint: new Spawnpoint(0,0),
@@ -197,11 +210,11 @@ let editor = {
 			let w = this.x2 - this.x1;
 			let h = this.y2 - this.y1;
 			
-			if (w < 1){
-				w = 1;
+			if (w < 2){
+				w = 2;
 			}
-			if (h < 1){
-				h = 1;
+			if (h < 2){
+				h = 2;
 			}
 			
 			let newPlatform = new Platform(this.x1,this.y1,w,h);
@@ -253,11 +266,5 @@ let editor = {
 			this.midY = undefined;
 			this.isPlaced = false;
 		}
-	},
-	
-	infoBoxes: [],
-	savedLevelData: [],
-	
-	keepCreating: false,
-	gridSnap: 5
+	}
 }

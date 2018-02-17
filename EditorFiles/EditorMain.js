@@ -7,6 +7,8 @@ let keysDown = [];
 canvas.width = W;
 canvas.height = H;
 
+
+document.getElementById("body").style.overflow = "hidden";
 let screen = {};
 let game = {};
 let mouse = {};
@@ -15,43 +17,62 @@ initializeObjects();
 
 
 
-let newBox = new InfoBox(0,0,150,200,"Controls",[]);
-newBox.lines = [
-"Move: WASD",
-"",
-"Sample Text"
-];
-editor.infoBoxes.push(newBox);
 
 
 
 
-//'Create' info box
-newBox = new InfoBox(150,0,300,200,"Create",[]);
+
+
+
+
+
+
+
+let newBox;
+
+//"Create" info box
+newBox = new InfoBox(0,0,300,200,"Create",[]);
 newBox.buttons.push(new Button(10,30,110,20,"New platform","rgb(60,170,220)","normal",
 function(){
 	editor.platFrame.creating = true;
 }));
 
-newBox.buttons.push(new Button(140,30,60,20,"Cancel","red","normal",
+newBox.buttons.push(new Button(160,30,60,20,"Cancel","red","normal",
 function(){
-	editor.infoBoxes[1].uncheckBoxes();
+	editor.infoBoxes[0].uncheckBoxes();
 	editor.platFrame.reset();
 	editor.spawnFrame.reset();
 }));
+newBox.buttons.push(new Button(160,60,100,20,"Deselect all","red","normal",
+function(){
+	let platforms = editor.levelDataFrame.platformGroup.platforms;
+	
+	for (let platform of platforms){
+		platform.highlighted = false;
+	}
+}));
+
 
 newBox.buttons.push(new Button(10,60,125,20,"Set spawnpoint","rgb(60,170,220)","normal",
 function(){
 	editor.spawnFrame.creating = true;
 }));
 
-newBox.buttons.push(new Button(160,60,20,20,"Keep creating","transparent","check",
+newBox.buttons.push(new Button(160,90,20,20,"Keep creating","transparent","check",
 function(){
 	editor.keepCreating = true;
 },
 function(){
 	editor.keepCreating = false;
-}))
+}));
+
+newBox.buttons.push(new Button(160,120,20,20,"Select mode","transparent","check",
+function(){
+	editor.selectMode = true;
+},
+function(){
+	editor.selectMode = false;
+}));
 
 newBox.buttons.push(new Button(10,130,110,20,"Set grid snap","rgb(60,170,220)","normal",
 function(){
@@ -71,9 +92,9 @@ editor.infoBoxes.push(newBox);
 
 
 //"Test" info box
-newBox = new InfoBox(450,0,150,150,"Test",[]);
+newBox = new InfoBox(300,0,150,150,"Test",[]);
 
-newBox.buttons.push(new Button(10,30,60,20,"Spawn","green","normal",
+newBox.buttons.push(new Button(10,30,60,20,"Spawn","rgb(60,170,220)","normal",
 function(){
 	//Spawn player
 	screen.saveX = screen.x;
@@ -97,14 +118,14 @@ editor.infoBoxes.push(newBox);
 
 
 //"Levels" info box
-newBox = new InfoBox(600,0,150,150,"Levels",[]);
+newBox = new InfoBox(450,0,275,100,"Levels",[]);
 
-newBox.buttons.push(new Button(10,30,100,20,"Save level","Green","normal",
+newBox.buttons.push(new Button(10,30,90,20,"Save level","rgb(60,170,220)","normal",
 function(){
 	//save level
 	editor.savedLevelData.push(editor.levelDataFrame.create());
 }));
-newBox.buttons.push(new Button(10,60,100,20,"Load level","rgb(60,170,220)","normal",
+newBox.buttons.push(new Button(10,60,90,20,"Load level","rgb(60,170,220)","normal",
 function(){
 	let levelToLoad = +prompt("Please enter what level you would like to load. There are " + editor.savedLevelData.length + " saved levels.");
 	
@@ -116,7 +137,59 @@ function(){
 		editor.levelDataFrame.load(editor.savedLevelData[levelToLoad - 1]);
 	}
 }));
+newBox.buttons.push(new Button(110,30,110,20,"Save as text","rgb(60,170,220)","normal",
+function(){
+	console.log("save text");
+}));
+newBox.buttons.push(new Button(110,60,130,20,"Load from text","rgb(60,170,220)","normal",
+function(){
+	console.log("load text");
+}));
+
 editor.infoBoxes.push(newBox);
+
+
+//"Edit Platform" conditional text box
+newBox = new InfoBox(W - 600, 0, 300, 300, "Edit Platform", []);
+newBox.lines = [
+"Use the arrow keys to move the",
+"selected platforms by an amount.",
+"",
+"",
+"Platform properties"
+];
+newBox.buttons.push(new Button(10,70,130,20,"Change amount","rgb(60,170,220)","normal",
+function(){
+	let moveAmt = +prompt("Enter the amount the platforms will move by:");
+	if (isNaN(moveAmt)){
+		alert("That's not a valid number.");
+	}
+	else{
+		editor.moveAmount = moveAmt;
+	}
+}));
+newBox.buttons.push(new Button(10,130,100,20,"Set color","rgb(60,170,220)","normal",
+function(){
+	let color = prompt("Enter the color you would like to set the selected platforms to:");
+	let platforms = editor.levelDataFrame.platformGroup.platforms;
+	for (let platform of platforms){
+		if (platform.highlighted){
+			platform.col = color;
+		}
+	}
+}))
+editor.infoBoxes.push(newBox);
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -129,8 +202,8 @@ function gameLoop(){
 	drawGrid(25);
 	
 	
-	//Draw mouse coordinates
-	drawMouseInfo();
+	
+	
 	game.currentLevel = new Level(editor.levelDataFrame.create());
 	
 	//Handles key presses
@@ -158,8 +231,11 @@ function gameLoop(){
 		game.spawn.draw();
 	}
 	
+	//Draw conditional boxes if conditions are met
 	checkInfoBoxes();
 	
+	//Draw mouse coordinates
+	drawMouseInfo();
 	requestAnimationFrame(gameLoop);
 }
 function drawMouseInfo(){
@@ -179,9 +255,21 @@ function checkInfoBoxes(){
 			break;
 		}
 	}
+	if (anyHighlights){
+		editor.infoBoxes[3].shown = true;
+	}
+	else{
+		editor.infoBoxes[3].shown = false;
+	}
 }
 
 //Create code function
 function createCode(){
+	let platforms = editor.levelDataFrame.platformGroup.platforms;
+	//Loop through everything, print out the code for each one.
+	
+	//for ()
+}
+function loadCode(code){
 	
 }
